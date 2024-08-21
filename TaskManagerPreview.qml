@@ -5,7 +5,7 @@ import QtQuick.Layouts
 Control {
     id: root
 
-    property var duration: 1000
+    property var duration: 200
     property alias model: listview.model
     // property alias spacing: listview.spacing
     property alias orientation: listview.orientation
@@ -17,15 +17,18 @@ Control {
         id: listview
         implicitWidth: root.implicitWidth
         implicitHeight: root.implicitHeight - 20
-        // anchors.left: background.left
-        // anchors.top: background.top
-        // anchors.topMargin: 20
+        anchors.left: background.left
+        anchors.top: background.top
+        anchors.leftMargin: listview.spacing
+        anchors.topMargin: 20
 
         layoutDirection: Qt.LeftToRight
         verticalLayoutDirection: Qt.LeftToRight
         boundsBehavior: Flickable.StopAtBounds
         interactive: true
         highlightFollowsCurrentItem: true
+
+        spacing: 5
 
 
         highlight: Control {
@@ -34,34 +37,44 @@ Control {
 
         delegate: Rectangle {
             property bool isRemoving: false
-            color: "blue"
-            opacity: 0.2
+            id: delegate
             objectName: "delegate"
+            color: "blue"
+
             implicitWidth: 140
             implicitHeight: 60
 
             ListView.onRemove: {
                 isRemoving = true
+                removeAnimation.start()
             }
 
-            Behavior on x {
-                enabled: root.orientation === ListView.Horizontal
-                SmoothedAnimation { duration: root.duration }
+            SequentialAnimation {
+                id: removeAnimation
+                PropertyAction { target: delegate; property: "ListView.delayRemove"; value: true }
+                NumberAnimation {
+                    target: delegate
+                    property: "x"
+                    to: {
+                        var item = listview.itemAtIndex(listview.model.count - 1)
+                        return item?.x + item?.implicitWidth - delegate.implicitWidth
+                    }
+                    duration: root.duration
+                }
+                PropertyAction { target: delegate; property: "ListView.delayRemove"; value: false }
             }
         }
 
         add: Transition {
-            PropertyAction { property: "transformOrigin"; value: Item.Left }
-            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: root.duration }
-            NumberAnimation { property: "scale"; from: 0.5; to: 1.0; duration: root.duration }
-            XAnimator { from: 0; duration: root.duration }
-        }
-
-        remove: Transition {
-            PropertyAction { property: "transformOrigin"; value: Item.Left }
-            NumberAnimation { property: "opacity"; from: 1; to: 0; duration: root.duration }
-            NumberAnimation { property: "scale"; from: 1.0; to: 0.5; duration: root.duration }
-            XAnimator { to: 0; duration: root.duration }
+            id: addTrans
+            NumberAnimation {
+                property:"x"
+                from: {
+                    var item = listview.itemAtIndex(listview.model.lastSize - 1)
+                    return item?.x + item?.implicitWidth - addTrans.ViewTransition.item?.implicitWidth
+                }
+                duration: root.duration
+            }
         }
     }
 

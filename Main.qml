@@ -20,6 +20,7 @@ Window {
 
                 // while ( i++ < loopCount) {
                     list.append({"preview": (++count).toString()})
+                    list.append({"preview": (++count).toString()})
                 // }
             }
         }
@@ -31,6 +32,7 @@ Window {
                 var i = 0
                 // while ( i++ < loopCount) {
                     // if (count < 0) break;
+                    list.remove(--count, 1)
                     list.remove(--count, 1)
                 // }
             }
@@ -47,7 +49,14 @@ Window {
 
     ListModel {
         id: list
+        property var lastSize: 1
         ListElement { preview: "1" }
+
+        onCountChanged: {
+            Qt.callLater(()=> {
+                   lastSize = count
+            })
+        }
     }
 
     TaskManagerPreview {
