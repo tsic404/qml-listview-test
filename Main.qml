@@ -54,9 +54,8 @@ Window {
         id: view
         anchors.centerIn: parent
         model: list
-        maxSize: Qt.size(root.width, root.height)
-        previewCotent: contentc
-        orientation: ListView.Vertical
+        // previewCotent: contentc
+        orientation: ListView.Horizontal
     }
 
     Component{
